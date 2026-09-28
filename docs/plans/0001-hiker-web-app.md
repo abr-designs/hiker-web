@@ -5,19 +5,19 @@
 
 | Field | Value |
 |---|---|
-| Status | Approved |
+| Status | In Progress |
 | Created | 2026-09-28 |
 | Updated | 2026-09-28 |
 | Proficiency | 6/10 |
 | Engine | Vanilla HTML / CSS / JS (ES modules), static hosting, no backend |
-| Revisions | 0 (latest: none) |
+| Revisions | 1 (latest: U-001) |
 | Summary | Hike cards ranked by the sheet's hike Score, grouped into weather bands per forecast day, with drive times. |
 
 ## Revision Log
 
 | ID | Date | Type | Change |
 |---|---|---|---|
-| (empty until first amendment) |
+| U-001 | 2026-09-28 | Update | Origin prefers saved home over geolocation; test command uses a glob; convert title-cases names; ui/dom.js element helper added. |
 
 ---
 
@@ -130,7 +130,7 @@ Responsibility: drive hours from origin via `router.project-osrm.org/table/v1/dr
 - `getDriveHours(origin, hikes) -> Promise<Map<id, number>>`: one request per origin; cache key is origin rounded to 2 decimals.
 
 ### origin (`js/origin.js`)
-- `getOrigin() -> Promise<{lat, lon, source}>`: browser geolocation, else saved home from localStorage, else `config.DEFAULT_HOME`.
+- `getOrigin() -> Promise<{lat, lon, source}>`: saved home from localStorage, else browser geolocation, else `config.DEFAULT_HOME`. A saved home is an explicit choice, so it wins.
 - `saveHome({lat, lon})`.
 
 ### cache (`js/cache.js`)
@@ -150,7 +150,8 @@ Pattern: Observer.
 
 ### ui (`js/ui/`)
 - `card.js` `renderCard(hike, dayForecast, driveHrs) -> Element`: name, AllTrails link, Score, length / time / gain, difficulty, quality, tags, access, season, weather summary + band, drive time.
-- `list.js` `renderList(root, bands)`.
+- `list.js` `renderList(root, bands, driveHours)`.
+- `dom.js` `el(tag, attrs, ...children)` element helper shared by the three views.
 - `controls.js` `renderControls(root, store, days)`: day picker, season / access / country / tag filters, set-home input.
 
 ### convert (`tools/convert.mjs`)
@@ -158,6 +159,7 @@ Responsibility: one-time import from sheet CSVs in `data/source/` to `data/hikes
 
 - Local supplies every Score input. Database adds `lat`, `lon`, `months`, `tags`, `access`, joined on trail name (case-insensitive, trimmed).
 - Decodes bitmasks to names (tables below). `country` = `US` when Local Restrictions contains `USA`, else `CA`. Local "When To Visit" kept as `notes`.
+- Title-cases display names (the sheet mixes cases).
 - Reports unmatched names and field conflicts to stdout.
 
 ## Data
@@ -203,7 +205,7 @@ Required: `id, name, lengthKm, timeHrs, gainM, difficulty, quality, accessibilit
 
 ## Implementation Notes
 - Serve over http (`npx serve` or VS Code Live Server); `file://` blocks ES modules and `fetch`.
-- Tests: `node --test tests/`, no package.json. `hikeScore` test checks all 64 current sheet values.
+- Tests: `node --test "tests/*.test.mjs"`, no package.json (Node 25 rejects a bare directory argument). `hikeScore` test checks all 64 current sheet values.
 - Order: convert + data, pure scoring, store, clients, recommender, UI, polish.
 - Render cards before any network call finishes; network failures degrade to Score-only sorting.
 - OSRM public server: about 1 request per second, cache per origin. Ferry legs are approximate.
