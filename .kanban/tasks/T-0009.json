@@ -1,0 +1,22 @@
+{
+  "id": "T-0009",
+  "title": "Build hike card component",
+  "description": "js/ui/card.js renderCard(hike, dayForecast, driveHrs): name, AllTrails link, Score, length / time / gain, difficulty, quality, tags, access, season, weather summary with band badge, drive time. Missing weather or drive time renders a quiet placeholder.\n\nAcceptance: readable at 375px wide and in dark mode; screenshot attached.\n\nFrom docs/plans/0001-hiker-web-app.md, section \"Components > ui\".",
+  "lane": "todo",
+  "priority": "medium",
+  "labels": [
+    "plan-0001",
+    "ui"
+  ],
+  "due": "",
+  "sprint": "hiker-v1",
+  "assignee": "",
+  "screenshot": true,
+  "order": 90,
+  "created": "2026-09-28T23:05:20.299Z",
+  "updated": "2026-09-28T23:05:20.299Z",
+  "links": [],
+  "attachments": [],
+  "comments": [],
+  "work": []
+}

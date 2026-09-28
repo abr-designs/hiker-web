@@ -1,0 +1,22 @@
+{
+  "id": "T-0012",
+  "title": "Document running locally and adding a hike",
+  "description": "README.md: how to serve (`npx serve`), run tests (`node --test tests/`), re-run convert, and the hikes.json fields for adding a hike by hand (required vs optional, tag / access / month names).\n\nAcceptance: a new hike added by following the README shows up with a Score and weather.\n\nFrom docs/plans/0001-hiker-web-app.md, sections \"Data\", \"Implementation Notes\".",
+  "lane": "todo",
+  "priority": "low",
+  "labels": [
+    "plan-0001",
+    "docs"
+  ],
+  "due": "",
+  "sprint": "hiker-v1",
+  "assignee": "",
+  "screenshot": false,
+  "order": 120,
+  "created": "2026-09-28T23:05:20.299Z",
+  "updated": "2026-09-28T23:05:20.299Z",
+  "links": [],
+  "attachments": [],
+  "comments": [],
+  "work": []
+}

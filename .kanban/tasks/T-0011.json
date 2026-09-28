@@ -1,0 +1,22 @@
+{
+  "id": "T-0011",
+  "title": "Wire startup flow and degraded states in main.js",
+  "description": "js/main.js: loadHikes, render Score-sorted cards immediately, then fetch weather and drive times in parallel, then rank and re-render. Subscribe list to store. Implement Loading / HikesOnly / Ranked / Error states.\n\nAcceptance: offline load still shows all cards sorted by Score with a notice; broken hikes.json shows an error message; screenshots of Ranked and offline states.\n\nFrom docs/plans/0001-hiker-web-app.md, section \"Key Flows\".",
+  "lane": "todo",
+  "priority": "high",
+  "labels": [
+    "plan-0001",
+    "ui"
+  ],
+  "due": "",
+  "sprint": "hiker-v1",
+  "assignee": "",
+  "screenshot": true,
+  "order": 110,
+  "created": "2026-09-28T23:05:20.299Z",
+  "updated": "2026-09-28T23:05:20.299Z",
+  "links": [],
+  "attachments": [],
+  "comments": [],
+  "work": []
+}

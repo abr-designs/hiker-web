@@ -23,6 +23,15 @@
       "name": "Done"
     }
   ],
-  "sprints": [],
+  "sprints": [
+    {
+      "id": "hiker-v1",
+      "name": "Hiker v1",
+      "start": "2026-09-28",
+      "end": "2026-10-11",
+      "status": "planned"
+    }
+  ],
+  "labels": {},
   "created": "2026-09-28T21:40:57.760Z"
 }
