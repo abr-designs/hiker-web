@@ -244,7 +244,9 @@ window.Kanban = window.Kanban || {};
     const errors = [];
     let project;
     try {
-      project = normalizeProject(JSON.parse(projectText));
+      const raw = JSON.parse(projectText);
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('project.json is not a JSON object');
+      project = normalizeProject(raw);
     } catch (err) {
       errors.push({ file: 'project.json', message: err.message });
       project = normalizeProject({});

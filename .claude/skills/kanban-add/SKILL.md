@@ -7,7 +7,7 @@ description: Adds or edits tasks on the local Kanban board through its Node CLI,
 
 # Kanban: add and edit tasks
 
-CLI: `node .kanban/tool/kanban.mjs` in the Bash tool, run from the repo root (below: `kanban`). The board is `<repo>/.kanban`, one project per folder; `--root` or a `KANBAN_ROOT` env value points elsewhere. If `.kanban/tool/kanban.mjs` is missing, tell the user to run the global `setup-kanban` skill in this repo.
+CLI: `node .kanban/tool/kanban.mjs` in the Bash tool, run from the repo root (below: `kanban`). The board is `<repo>/.kanban`, one project per folder, and this copy of the CLI always uses the board it sits in (`--root` points elsewhere). If `.kanban/tool/kanban.mjs` is missing, tell the user to run the global `setup-kanban` skill in this repo.
 
 ## Quick start
 

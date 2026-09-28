@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const APP_DIR = fs.existsSync(path.join(HERE, 'js', 'storage.js')) ? HERE : path.resolve(HERE, '..');
 
-const HELP = `Usage: node tools/kanban.mjs <command> [args] [--root <project folder>] [--json]
+const HELP = `Usage: node kanban.mjs <command> [args] [--root <project folder>] [--json]
 
   init [--name <n>]                         start a project in the folder (created if missing)
   project                                   lane ids, sprint ids and statuses, tag colors, tags in use
@@ -37,7 +37,8 @@ const HELP = `Usage: node tools/kanban.mjs <command> [args] [--root <project fol
 Fields: --title --description --lane --priority --labels a,b --due YYYY-MM-DD
         --sprint <id> --assignee <name | agent:name> --screenshot true|false
 --force skips the screenshot and agent checks.
-Project folder: --root, else KANBAN_ROOT, else .kanban in the current directory.`;
+Project folder: --root, else the board holding this copy (<board>/tool/kanban.mjs),
+else KANBAN_ROOT, else .kanban in the current directory.`;
 
 // ---------- Args ----------
 
@@ -206,7 +207,7 @@ function makeApi(K, root, flags) {
   }
 
   function saveProjectGuard(data) {
-    if (data.errors.some((e) => e.file === 'project.json')) fail('project.json is unreadable; fix it before changing lanes or sprints');
+    if (data.errors.some((e) => e.file === 'project.json')) fail('project.json is unreadable; fix it before changing tasks, lanes or sprints (run: validate)');
   }
 
   const summary = (t, project) => {
@@ -310,7 +311,9 @@ async function main() {
   const [cmd, ...args] = pos;
   if (!cmd || cmd === 'help' || flags.help) return console.log(HELP);
 
-  const root = path.resolve(flags.root || process.env.KANBAN_ROOT || '.kanban');
+  // A project copy (<board>/tool/kanban.mjs) always serves its own board, whatever the current directory.
+  const ownBoard = path.basename(HERE) === 'tool' && fs.existsSync(path.join(HERE, '..', 'project.json')) ? path.dirname(HERE) : '';
+  const root = path.resolve(flags.root || ownBoard || process.env.KANBAN_ROOT || '.kanban');
   if (cmd === 'init') fs.mkdirSync(root, { recursive: true });
   else if (!fs.existsSync(root)) fail('Project folder not found: ' + root + '. Run: init, or pass --root / set KANBAN_ROOT');
   const K = loadKanban();
@@ -362,6 +365,7 @@ async function main() {
 
     case 'add': {
       const data = await api.load();
+      api.saveProjectGuard(data);
       if (!flags.title) fail('--title is required');
       const t = now();
       const task = S.normalizeTask({ lane: data.project.lanes[0].id, created: t, updated: t }, await S.nextTaskId());
@@ -375,6 +379,7 @@ async function main() {
     case 'update': {
       const [id] = args;
       const data = await api.load();
+      api.saveProjectGuard(data);
       const task = api.findTask(data, id);
       const oldLane = task.lane;
       const hadShot = task.screenshot;
@@ -479,6 +484,7 @@ async function main() {
     // Tasks keep the listed order: the first one sits highest in its lane.
     case 'bulk': {
       const data = await api.load();
+      api.saveProjectGuard(data);
       const spec = readJson(String(flags.file)) || fail('--file must be a readable JSON spec');
       if (!Array.isArray(spec.tasks) || !spec.tasks.length) fail('spec.tasks must be a non-empty array');
       const project = data.project;
