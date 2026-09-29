@@ -38,12 +38,18 @@ function matches(hike, { inSeason, access = [], country, tags = [], maxDriveHrs 
 /**
  * Splits rank() output for display: good-weather items first, then every other item by Score alone
  * (band labels are not shown, so the rest must not look out of order). Items gain their `band`.
+ * Once any drive time is known, hikes without one go to the bottom of the list, by Score.
  * @created Claude (claude-opus-5-5) - 2026-09-28
  */
-export function goodFirst(bands) {
+export function goodFirst(bands, driveHours = new Map()) {
   const tagged = bands.flatMap(({ band, items }) => items.map(item => ({ ...item, band })));
+  const noDrive = i => driveHours.size > 0 && !driveHours.has(i.hike.id);
+  const byScore = (a, b) => a.hike.score - b.hike.score;
   return {
-    good: tagged.filter(i => i.band === 'good'),
-    rest: tagged.filter(i => i.band !== 'good').sort((a, b) => a.hike.score - b.hike.score),
+    good: tagged.filter(i => i.band === 'good' && !noDrive(i)),
+    rest: [
+      ...tagged.filter(i => i.band !== 'good' && !noDrive(i)).sort(byScore),
+      ...tagged.filter(noDrive).sort(byScore),
+    ],
   };
 }

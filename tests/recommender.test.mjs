@@ -76,3 +76,13 @@ test('goodFirst: good items first, the rest by Score regardless of band', () => 
   assert.deepEqual(rest.map(i => i.hike.id), ['poorLow', 'unknown', 'fairHigh']);
   assert.deepEqual(rest.map(i => i.band), ['poor', 'unknown', 'fair']);
 });
+
+test('goodFirst puts hikes without a drive time at the bottom once drive times are known', () => {
+  const hikes = [hike('goodNoDrive', 1), hike('good', 5), hike('restNoDrive', 2), hike('rest', 9)];
+  const forecasts = new Map([['goodNoDrive', [day()]], ['good', [day()]]]);
+  const bands = rank(hikes, forecasts);
+  const { good, rest } = goodFirst(bands, new Map([['good', 1], ['rest', 2]]));
+  assert.deepEqual(good.map(i => i.hike.id), ['good']);
+  assert.deepEqual(rest.map(i => i.hike.id), ['rest', 'goodNoDrive', 'restNoDrive']);
+  assert.deepEqual(goodFirst(bands).good.map(i => i.hike.id), ['goodNoDrive', 'good']);
+});
