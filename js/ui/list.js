@@ -40,7 +40,7 @@ export function renderList(root, bands, ctx = {}) {
       onRemove: hike.custom && onRemove && (() => onRemove(hike)),
     }), hike.name, () => root.querySelector(`[data-hike="${CSS.escape(hike.id)}"] .card-open`)?.focus()) });
   };
-  const { good, rest } = goodFirst(bands);
+  const { good, rest } = goodFirst(bands, driveHours);
   const total = good.length + rest.length;
 
   // Good matches come first, so the page limit only cuts into More hikes once every good match is shown.

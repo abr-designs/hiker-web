@@ -41,7 +41,7 @@ export function renderCard({ hike, forecast, dayIndex, band, driveHrs, image, on
       el('div', { class: 'chips' },
         band === 'good' && chip('trophy', 'Good match', 'good'),
         DIFFICULTY[hike.difficulty - 1] && chip(null, DIFFICULTY[hike.difficulty - 1], `diff diff-${hike.difficulty}`),
-        driveHrs !== undefined && chip('car', `${driveHrs.toFixed(1)} h drive`),
+        driveHrs !== undefined && chip('car', driveLabel(driveHrs)),
         chip('calendar', season(hike)),
         hike.access.map(a => chip('alert', a, 'warn')),
         (expanded ? hike.tags : hike.tags.slice(0, 2)).map(t => chip(TAG_ICONS[t], tagLabel(t)))),
@@ -60,6 +60,11 @@ function renderCredit(image) {
   return image.page
     ? el('a', { class: 'credit', href: image.page, target: '_blank', rel: 'noopener', title: text }, text)
     : el('span', { class: 'credit', title: text }, text);
+}
+
+/** "45 min drive" under an hour, else "2.3 h drive". @created Claude (claude-opus-5-5) - 2026-09-28 */
+function driveLabel(hours) {
+  return hours < 1 ? `${Math.round(hours * 60)} min drive` : `${hours.toFixed(1)} h drive`;
 }
 
 /** @created Claude (claude-opus-5-5) - 2026-09-28 */
