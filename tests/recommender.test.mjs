@@ -57,6 +57,13 @@ test('tags require any selected', () => {
   assert.deepEqual(ids(rank(hikes, noWeather, { filters: { tags: ['WATERFALLS', 'GEOLOGY'] } })), ['w', 's']);
 });
 
+test('drive filter keeps hikes within the limit and hikes with no drive time', () => {
+  const hikes = [hike('near', 1), hike('far', 2), hike('unknown', 3)];
+  const driveHours = new Map([['near', 1.5], ['far', 4.2]]);
+  assert.deepEqual(ids(rank(hikes, noWeather, { filters: { maxDriveHrs: 2 }, driveHours })), ['near', 'unknown']);
+  assert.equal(ids(rank(hikes, noWeather, { filters: { maxDriveHrs: 0 }, driveHours })).length, 3);
+});
+
 test('goodFirst: good items first, the rest by Score regardless of band', () => {
   const hikes = [hike('good', 5), hike('fairHigh', 9), hike('poorLow', 1), hike('unknown', 3)];
   const forecasts = new Map([

@@ -10,7 +10,7 @@
 | Updated | 2026-09-28 |
 | Proficiency | 6/10 |
 | Engine | Vanilla HTML / CSS / JS (ES modules), static hosting, no backend |
-| Revisions | 7 (latest: U-007) |
+| Revisions | 8 (latest: U-008) |
 | Summary | Hike cards ranked by the sheet's hike Score, grouped into weather bands per forecast day, with drive times. |
 
 ## Revision Log
@@ -24,6 +24,7 @@
 | U-005 | 2026-09-28 | Improvement | Modal shows titled Distance, Time and Elevation facts and large day buttons (high, low, rain chance); choosing a day loads its hourly forecast, 6 AM to 9 PM (`weatherClient.getHourly`, `ui/weatherDetail.js`). |
 | U-006 | 2026-09-28 | Improvement | Hikes can be added in the app (`ui/hikeForm.js`, `customHikes.js`): saved in localStorage, merged after `data/hikes.json`, removable from their modal, and exported as a drop-in `hikes.json`; `tools/add-hike.mjs` and the `/add-hike` skill append one from the command line with the same checks. Quality shows as a corner badge (award icon and "N/5"). |
 | U-007 | 2026-09-28 | Improvement | The list shows the top `PAGE_SIZE` (6) cards; "Show 6 more" adds the next set and moves focus to the first new card. Changing the day or a filter starts again at the top 6; weather and drive-time updates keep the loaded cards. |
+| U-008 | 2026-09-28 | Improvement | Drive time filter (`maxDriveHrs`: any, or up to 1, 2, 3, 4 or 6 h); hikes with no known drive time stay listed. |
 
 ---
 
@@ -155,8 +156,8 @@ Responsibility: drive hours from origin via `router.project-osrm.org/table/v1/dr
 Responsibility: filter, band, sort. Pure.
 Pattern: Pipeline (filter -> band -> sort).
 
-- `rank(hikes, forecasts, {dayIndex, filters, month}) -> Band[]`: hikes without a forecast go to an `unknown` band after the others; each band sorted by `score` ascending.
-- Filters: `inSeason` (month in `hike.months`), `access` (exclude selected access tags), `country`, `tags` (require any selected).
+- `rank(hikes, forecasts, {dayIndex, filters, month, driveHours}) -> Band[]`: hikes without a forecast go to an `unknown` band after the others; each band sorted by `score` ascending.
+- Filters: `inSeason` (month in `hike.months`), `access` (exclude selected access tags), `country`, `tags` (require any selected), `maxDriveHrs` (drive time at most this many hours; hikes without a drive time pass).
 
 ### state (`js/state.js`)
 Pattern: Observer.
@@ -171,7 +172,7 @@ Pattern: Observer.
 - `icons.js`: inline stroke icons and WMO code -> icon.
 - `list.js` `renderList(root, bands, {forecasts, dayIndex, driveHours, images})`: "Good matches" group, then "More hikes" (every other band, merged and sorted by Score via `goodFirst`). Only the first `PAGE_SIZE` cards render; a "Show N more" button adds the next set, and heading counts stay the full totals.
 - `dom.js` `el(tag, attrs, ...children)` element helper shared by the three views.
-- `controls.js` `renderControls(root, store, days, hikes)`: day picker, home picker (place search, lat, lon, or current location), one Filters fold-out holding season / country / access / tag filters, and a Hikes row (Add hike, and Download hikes.json once hikes were added).
+- `controls.js` `renderControls(root, store, days, hikes)`: day picker, home picker (place search, lat, lon, or current location), one Filters fold-out holding season / country / drive time / access / tag filters, and a Hikes row (Add hike, and Download hikes.json once hikes were added).
 
 ### convert (`tools/convert.mjs`)
 Responsibility: one-time import from sheet CSVs in `data/source/` to `data/hikes.json`.

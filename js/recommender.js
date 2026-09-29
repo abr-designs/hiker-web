@@ -7,14 +7,15 @@ import { weatherScore, bandFor } from './weatherScore.js';
 export const BAND_ORDER = ['good', 'fair', 'poor', 'nogo', 'unknown'];
 
 /**
- * filters = {inSeason: boolean, access: string[] (excluded), country: '' | 'CA' | 'US', tags: string[] (any)}.
+ * filters = {inSeason: boolean, access: string[] (excluded), country: '' | 'CA' | 'US', tags: string[] (any),
+ * maxDriveHrs: number (0 or missing = any)}. driveHours: Map of hike id to hours; hikes without one pass the drive filter.
  * Returns non-empty bands in BAND_ORDER: [{band, items: [{hike, day, weather}]}].
  * @created Claude (claude-opus-5-5) - 2026-09-28
  */
-export function rank(hikes, forecasts, { dayIndex = 0, filters = {}, month = new Date().getMonth() + 1 } = {}) {
+export function rank(hikes, forecasts, { dayIndex = 0, filters = {}, month = new Date().getMonth() + 1, driveHours = new Map() } = {}) {
   const groups = Object.fromEntries(BAND_ORDER.map(b => [b, []]));
 
-  for (const hike of hikes.filter(h => matches(h, filters, month))) {
+  for (const hike of hikes.filter(h => matches(h, filters, month, driveHours.get(h.id)))) {
     const day = forecasts.get(hike.id)?.[dayIndex];
     const weather = day ? weatherScore(day) : undefined;
     groups[day ? bandFor(weather) : 'unknown'].push({ hike, day, weather });
@@ -25,11 +26,12 @@ export function rank(hikes, forecasts, { dayIndex = 0, filters = {}, month = new
     .filter(g => g.items.length);
 }
 
-function matches(hike, { inSeason, access = [], country, tags = [] }, month) {
+function matches(hike, { inSeason, access = [], country, tags = [], maxDriveHrs }, month, driveHrs) {
   if (inSeason && hike.months && !hike.months.includes(month)) return false;
   if (access.some(a => hike.access.includes(a))) return false;
   if (country && hike.country !== country) return false;
   if (tags.length && !tags.some(t => hike.tags.includes(t))) return false;
+  if (maxDriveHrs && driveHrs > maxDriveHrs) return false;
   return true;
 }
 

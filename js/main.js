@@ -22,7 +22,7 @@ const $notice = document.getElementById('notice');
 
 const store = createStore({
   dayIndex: 0,
-  filters: { inSeason: false, access: [], country: '', tags: [] },
+  filters: { inSeason: false, access: [], country: '', tags: [], maxDriveHrs: 0 },
   home: null,
 });
 
@@ -37,7 +37,7 @@ let origin;
 
 function render() {
   const { dayIndex, filters } = store.get();
-  const bands = rank(hikes, forecasts, { dayIndex, filters });
+  const bands = rank(hikes, forecasts, { dayIndex, filters, driveHours });
   renderList($list, bands, {
     forecasts, dayIndex, driveHours, images, day: days[dayIndex], onRemove: removeHike, view: JSON.stringify({ dayIndex, filters }),
   });
