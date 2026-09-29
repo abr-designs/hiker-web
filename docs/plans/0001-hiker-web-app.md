@@ -18,7 +18,7 @@
 | ID | Date | Type | Change |
 |---|---|---|---|
 | U-001 | 2026-09-28 | Update | Origin prefers saved home over geolocation; test command uses a glob; convert title-cases names; ui/dom.js element helper added. |
-| U-002 | 2026-09-28 | Improvement | Card redesign: photo background from Wikimedia Commons or Openverse (build-time `tools/images.mjs` -> `data/images.json`, credit names author and licence; entries are checked by hand and `false` marks a rejected match), 7-day weather icon strip, Score and band labels hidden, list shows Good matches first, then the rest by Score (`goodFirst` in recommender.js). |
+| U-002 | 2026-09-28 | Improvement | Card redesign: photo background from Wikimedia Commons, Flickr (geo search, key in untracked `.env.local`), Wikipedia or Openverse (build-time `tools/images.mjs` -> `data/images.json`, credit names author and licence; entries are checked by hand and `{rejected: [pages]}` marks turned-down photos), 7-day weather icon strip, Score and band labels hidden, list shows Good matches first, then the rest by Score (`goodFirst` in recommender.js). |
 
 ---
 

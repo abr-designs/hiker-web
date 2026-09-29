@@ -72,13 +72,25 @@ This overwrites `data/hikes.json` (hand-added hikes included) and prints unmatch
 
 ## Photos
 
-`data/images.json` maps a hike id to `{url, page, credit, title}`: a photo, its source page, the credit shown on the card (linked to the page for attribution) and the source's own title. Hikes without an entry, with `null` (nothing found) or `false` (rejected by hand) show fallback art. To fill in new hikes:
+`data/images.json` maps a hike id to one of:
+
+| Entry | Meaning |
+|---|---|
+| `{url, page, credit, title}` | A photo, its source page, the credit shown on the card (linked to the page for attribution) and the source's own title. |
+| `{rejected: [page, ...]}` | Photos turned down by hand. The card shows fallback art and lookups never pick these pages again. |
+| `null` | Nothing found. |
+
+To fill in new hikes:
 
 ```bash
 node tools/images.mjs
 ```
 
-It tries Wikimedia Commons (hike name near its coordinates), then [Openverse](https://openverse.org) (openly licensed photos, mostly Flickr; name plus province or state, then name alone). A title must contain every distinctive word of the hike name (not words like mount or lake), and Openverse photos must also look scenic or regional. The credit on each card names the author and licence. It keeps existing entries (hand edits win), paces itself around the rate limits and retries failed requests; hikes that still fail are left out and tried again on the next run. A full run takes about 20 minutes. Add `--retry-misses` to look up `null` entries again. Matching is by title only, so the same name elsewhere (another Mount Daniel, a Chain Bridge) can slip through: check each new photo against its `title` and the hike, and set wrong ones to `false` so no later run picks them again. To pick a photo yourself, set the entry by hand.
+Sources, most specific first: Wikimedia Commons (hike name near its coordinates), Flickr (hike name within 5 km of its coordinates), Wikipedia articles within 10 km whose title names the hike, then [Openverse](https://openverse.org) (openly licensed photos with no location, so it searches the name plus province or state and the title must also look scenic or regional). Every source needs the distinctive words of the hike name (not words like mount or lake) in the photo's title. The run paces itself around rate limits and retries failed requests; hikes that still fail are left out and tried again on the next run. Add `--retry-misses` to look up `null` and rejected entries again.
+
+Flickr needs a free API key (create one at flickr.com/services/apps/create). Put it in an untracked `.env.local` file as `FLICKR_API_KEY=...`, or set it in the environment. Without a key the run skips Flickr.
+
+Matching is by text, so the same name elsewhere can slip through. Check each new photo against the hike before committing. To reject one, replace the entry with `{"rejected": ["<its page>"]}` (keep earlier rejected pages in the list). To pick a photo yourself, write the entry by hand.
 
 ## Settings
 
