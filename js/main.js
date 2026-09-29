@@ -33,7 +33,7 @@ let notes = [];
 function render() {
   const { dayIndex, filters } = store.get();
   const bands = rank(hikes, forecasts, { dayIndex, filters });
-  renderList($list, bands, { forecasts, dayIndex, driveHours, images });
+  renderList($list, bands, { forecasts, dayIndex, driveHours, images, day: days[dayIndex] });
   renderControls($controls, store, days);
 }
 
@@ -43,11 +43,15 @@ function notice(text, isError = false) {
 }
 
 async function loadDriveTimes(origin) {
+  driveHours = await fetchDriveTimes(origin);
+}
+
+async function fetchDriveTimes(origin) {
   try {
-    driveHours = await getDriveHours(origin, hikes);
+    return await getDriveHours(origin, hikes);
   } catch {
-    driveHours = new Map();
     notes.push('drive times unavailable');
+    return new Map();
   }
 }
 
@@ -65,7 +69,7 @@ async function start() {
   notice('Loading weather and drive times...');
 
   const origin = await getOrigin();
-  if (origin.source === 'home') store.set({ home: { lat: origin.lat, lon: origin.lon } });
+  if (origin.source === 'home') store.set({ home: { lat: origin.lat, lon: origin.lon, name: origin.name } });
 
   const [weather] = await Promise.allSettled([getForecasts(hikes, DAYS), loadDriveTimes(origin)]);
   if (weather.status === 'fulfilled') {
@@ -75,18 +79,21 @@ async function start() {
     notes.unshift('weather unavailable, sorted by Score only');
   }
 
-  notice(notes.length ? `Offline: ${notes.join('; ')}.` : `Drive times from ${originLabel(origin.source)}.`, notes.length > 0);
+  notice(notes.length ? `Offline: ${notes.join('; ')}.` : `Drive times from ${origin.name ?? originLabel(origin.source)}.`, notes.length > 0);
   render();
 
   let lastHome = store.get().home;
   store.subscribe(async state => {
-    if (state.home !== lastHome) {
-      lastHome = state.home;
-      saveHome(state.home);
-      notes = [];
-      await loadDriveTimes({ ...state.home, source: 'home' });
-      notice(notes.length ? `Offline: ${notes.join('; ')}.` : 'Drive times from home.', notes.length > 0);
-    }
+    render();
+    if (state.home === lastHome) return;
+    const home = lastHome = state.home;
+    saveHome(home);
+    notes = [];
+    const hours = await fetchDriveTimes({ ...home, source: 'home' });
+    // A newer home was picked while this one loaded: its own request will finish the job.
+    if (home !== lastHome) return;
+    driveHours = hours;
+    notice(notes.length ? `Offline: ${notes.join('; ')}.` : `Drive times from ${home.name ?? 'home'}.`, notes.length > 0);
     render();
   });
 }
@@ -106,7 +113,7 @@ async function loadImages() {
 }
 
 function originLabel(source) {
-  return { home: 'home', geolocation: 'your location', default: 'Vancouver (set a home below)' }[source];
+  return { home: 'home', geolocation: 'your location', default: 'Vancouver (set a home above)' }[source];
 }
 
 start();

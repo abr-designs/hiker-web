@@ -11,6 +11,7 @@ export const WEATHER_TTL_MS = 3 * 60 * 60 * 1000;
 export const ROUTE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast';
+export const GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 export const OSRM_URL = 'https://router.project-osrm.org/table/v1/driving';
 
 // Vancouver

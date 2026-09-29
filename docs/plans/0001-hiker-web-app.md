@@ -10,7 +10,7 @@
 | Updated | 2026-09-28 |
 | Proficiency | 6/10 |
 | Engine | Vanilla HTML / CSS / JS (ES modules), static hosting, no backend |
-| Revisions | 2 (latest: U-002) |
+| Revisions | 5 (latest: U-005) |
 | Summary | Hike cards ranked by the sheet's hike Score, grouped into weather bands per forecast day, with drive times. |
 
 ## Revision Log
@@ -19,6 +19,9 @@
 |---|---|---|---|
 | U-001 | 2026-09-28 | Update | Origin prefers saved home over geolocation; test command uses a glob; convert title-cases names; ui/dom.js element helper added. |
 | U-002 | 2026-09-28 | Improvement | Card redesign: photo background from Wikimedia Commons, Flickr (geo search, key in untracked `.env.local`), Wikipedia or Openverse (build-time `tools/images.mjs` -> `data/images.json`, credit names author and licence; entries are checked by hand and `{rejected: [pages]}` marks turned-down photos), 7-day weather icon strip, Score and band labels hidden, list shows Good matches first, then the rest by Score (`goodFirst` in recommender.js). |
+| U-003 | 2026-09-28 | Improvement | Home is set by place search (Open-Meteo geocoding, no key), typed lat, lon, or "Use my location", and saved with a name; filters sit in one fold-out; tag chips carry icons; the no-good-weather heading names the day. |
+| U-004 | 2026-09-28 | Improvement | Clicking a card opens it enlarged in a modal (`ui/modal.js`, one shared `<dialog>`) with every tag and each day's low and rain chance; difficulty is a chip coloured green to red; "Use my location" is an icon button beside the Home search. |
+| U-005 | 2026-09-28 | Improvement | Modal shows titled Distance, Time and Elevation facts and large day buttons (high, low, rain chance); choosing a day loads its hourly forecast, 6 AM to 9 PM (`weatherClient.getHourly`, `ui/weatherDetail.js`). |
 
 ---
 
@@ -132,7 +135,9 @@ Responsibility: drive hours from origin via `router.project-osrm.org/table/v1/dr
 
 ### origin (`js/origin.js`)
 - `getOrigin() -> Promise<{lat, lon, source}>`: saved home from localStorage, else browser geolocation, else `config.DEFAULT_HOME`. A saved home is an explicit choice, so it wins.
-- `saveHome({lat, lon})`.
+- `saveHome({lat, lon, name})`.
+- `searchPlaces(query) -> Promise<{name, lat, lon}[]>`: up to 5 matches from Open-Meteo geocoding.
+- `locate() -> Promise<{lat, lon}>`: browser geolocation.
 
 ### cache (`js/cache.js`)
 - `cacheGet(key) -> value | null`, `cacheSet(key, value, ttlMs)`. All storage access wrapped in try/catch.
@@ -150,11 +155,13 @@ Pattern: Observer.
 - `createStore(initial) -> {get, set(patch), subscribe(fn)}`. Holds `{dayIndex, filters}`.
 
 ### ui (`js/ui/`)
-- `card.js` `renderCard({hike, forecast, dayIndex, band, driveHrs, image}) -> Element`: photo (or fallback art), name, length / time / gain, difficulty, 7-day weather strip (icon, high, selected day, good-weather dot), chips (Good match, drive time, season, access, two tags), AllTrails or directions button. No numeric scores.
+- `card.js` `renderCard({hike, forecast, dayIndex, band, driveHrs, image, onOpen, expanded}) -> Element`: photo (or fallback art), name, length / time / gain, 7-day weather strip (icon, high, selected day, good-weather dot; `expanded` adds low and rain chance), chips (Good match, coloured difficulty, drive time, season, access, two tags or all when `expanded`), AllTrails or directions button. `onOpen` makes the card clickable. `expanded` shows titled Distance / Time / Elevation facts; `weather` replaces the strip. No numeric scores.
+- `weatherDetail.js` `renderWeatherDetail(hike, forecast, dayIndex)`: modal day buttons; the chosen day's hourly forecast (`weatherClient.getHourly(hike, date)`, cached) loads below.
+- `modal.js` `openModal(content, label)`: shows content in one shared `<dialog>`; Esc, the close button or a backdrop click closes it.
 - `icons.js`: inline stroke icons and WMO code -> icon.
 - `list.js` `renderList(root, bands, {forecasts, dayIndex, driveHours, images})`: "Good matches" group, then "More hikes" (every other band, merged and sorted by Score via `goodFirst`).
 - `dom.js` `el(tag, attrs, ...children)` element helper shared by the three views.
-- `controls.js` `renderControls(root, store, days)`: day picker, season / access / country / tag filters, set-home input.
+- `controls.js` `renderControls(root, store, days)`: day picker, home picker (place search, lat, lon, or current location), and one Filters fold-out holding season / country / access / tag filters.
 
 ### convert (`tools/convert.mjs`)
 Responsibility: one-time import from sheet CSVs in `data/source/` to `data/hikes.json`.
