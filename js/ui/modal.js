@@ -27,3 +27,8 @@ export function openModal(content, label, returnFocus) {
     content);
   dialog.showModal();
 }
+
+/** @created Claude (claude-opus-5-5) - 2026-09-28 */
+export function closeModal() {
+  dialog?.close();
+}

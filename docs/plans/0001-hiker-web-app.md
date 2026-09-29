@@ -10,7 +10,7 @@
 | Updated | 2026-09-28 |
 | Proficiency | 6/10 |
 | Engine | Vanilla HTML / CSS / JS (ES modules), static hosting, no backend |
-| Revisions | 5 (latest: U-005) |
+| Revisions | 7 (latest: U-007) |
 | Summary | Hike cards ranked by the sheet's hike Score, grouped into weather bands per forecast day, with drive times. |
 
 ## Revision Log
@@ -22,6 +22,8 @@
 | U-003 | 2026-09-28 | Improvement | Home is set by place search (Open-Meteo geocoding, no key), typed lat, lon, or "Use my location", and saved with a name; filters sit in one fold-out; tag chips carry icons; the no-good-weather heading names the day. |
 | U-004 | 2026-09-28 | Improvement | Clicking a card opens it enlarged in a modal (`ui/modal.js`, one shared `<dialog>`) with every tag and each day's low and rain chance; difficulty is a chip coloured green to red; "Use my location" is an icon button beside the Home search. |
 | U-005 | 2026-09-28 | Improvement | Modal shows titled Distance, Time and Elevation facts and large day buttons (high, low, rain chance); choosing a day loads its hourly forecast, 6 AM to 9 PM (`weatherClient.getHourly`, `ui/weatherDetail.js`). |
+| U-006 | 2026-09-28 | Improvement | Hikes can be added in the app (`ui/hikeForm.js`, `customHikes.js`): saved in localStorage, merged after `data/hikes.json`, removable from their modal, and exported as a drop-in `hikes.json`; `tools/add-hike.mjs` and the `/add-hike` skill append one from the command line with the same checks. Quality shows as a corner badge (award icon and "N/5"). |
+| U-007 | 2026-09-28 | Improvement | The list shows the top `PAGE_SIZE` (6) cards; "Show 6 more" adds the next set and moves focus to the first new card. Changing the day or a filter starts again at the top 6; weather and drive-time updates keep the loaded cards. |
 
 ---
 
@@ -123,6 +125,13 @@ Owns: `data/hikes.json`.
 
 - `loadHikes() -> Promise<Hike[]>`: throws on missing required fields with the hike name in the message.
 
+### customHikes (`js/customHikes.js`)
+Responsibility: hikes added in the app, kept in localStorage (`hiker:customHikes`) until exported.
+
+- `buildHike(fields, takenIds) -> Hike`: form strings to a hikes.json entry; throws one message listing every problem (missing fields, ratings outside 1 to 5, a name already in the list, a link that is not http or https).
+- `exportHikesJson(hikes) -> string`: the whole list as `data/hikes.json`, without `score` or the in-app `custom` marker. An unchanged list exports byte for byte.
+- A saved hike whose id is also in `data/hikes.json` is ignored, so committing an export retires the browser copy.
+
 ### weatherClient (`js/weatherClient.js`)
 Responsibility: one batched Open-Meteo request for all hikes with coordinates.
 
@@ -155,13 +164,14 @@ Pattern: Observer.
 - `createStore(initial) -> {get, set(patch), subscribe(fn)}`. Holds `{dayIndex, filters}`.
 
 ### ui (`js/ui/`)
-- `card.js` `renderCard({hike, forecast, dayIndex, band, driveHrs, image, onOpen, expanded}) -> Element`: photo (or fallback art), name, length / time / gain, 7-day weather strip (icon, high, selected day, good-weather dot; `expanded` adds low and rain chance), chips (Good match, coloured difficulty, drive time, season, access, two tags or all when `expanded`), AllTrails or directions button. `onOpen` makes the card clickable. `expanded` shows titled Distance / Time / Elevation facts; `weather` replaces the strip. No numeric scores.
+- `card.js` `renderCard({hike, forecast, dayIndex, band, driveHrs, image, onOpen, expanded}) -> Element`: photo (or fallback art), name, length / time / gain, 7-day weather strip (icon, high, selected day, good-weather dot; `expanded` adds low and rain chance), a corner badge (award icon and "N/5") for Quality, chips (Good match, coloured difficulty, drive time, season, access, two tags or all when `expanded`), AllTrails or directions button. `onOpen` makes the card clickable. `expanded` shows titled Distance / Time / Elevation facts; `weather` replaces the strip. `onRemove` adds a Remove button (hikes added in the app). No numeric scores.
 - `weatherDetail.js` `renderWeatherDetail(hike, forecast, dayIndex)`: modal day buttons; the chosen day's hourly forecast (`weatherClient.getHourly(hike, date)`, cached) loads below.
-- `modal.js` `openModal(content, label)`: shows content in one shared `<dialog>`; Esc, the close button or a backdrop click closes it.
+- `modal.js` `openModal(content, label, returnFocus)`, `closeModal()`: shows content in one shared `<dialog>`; Esc, the close button or a backdrop click closes it.
+- `hikeForm.js` `renderHikeForm({takenIds, onSave})`: the Add hike form (name, place search or pasted lat, lon, stats, ratings, season, tags, access, country, link, notes); errors from `buildHike` show under it.
 - `icons.js`: inline stroke icons and WMO code -> icon.
-- `list.js` `renderList(root, bands, {forecasts, dayIndex, driveHours, images})`: "Good matches" group, then "More hikes" (every other band, merged and sorted by Score via `goodFirst`).
+- `list.js` `renderList(root, bands, {forecasts, dayIndex, driveHours, images})`: "Good matches" group, then "More hikes" (every other band, merged and sorted by Score via `goodFirst`). Only the first `PAGE_SIZE` cards render; a "Show N more" button adds the next set, and heading counts stay the full totals.
 - `dom.js` `el(tag, attrs, ...children)` element helper shared by the three views.
-- `controls.js` `renderControls(root, store, days)`: day picker, home picker (place search, lat, lon, or current location), and one Filters fold-out holding season / country / access / tag filters.
+- `controls.js` `renderControls(root, store, days, hikes)`: day picker, home picker (place search, lat, lon, or current location), one Filters fold-out holding season / country / access / tag filters, and a Hikes row (Add hike, and Download hikes.json once hikes were added).
 
 ### convert (`tools/convert.mjs`)
 Responsibility: one-time import from sheet CSVs in `data/source/` to `data/hikes.json`.

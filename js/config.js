@@ -4,6 +4,9 @@
 
 export const DAYS = 7;
 
+// Cards shown at first, and added by each "Show more".
+export const PAGE_SIZE = 6;
+
 // Upper bound (inclusive) of each weather score band. Infinity is always nogo.
 export const BANDS = { good: 25, fair: 100 };
 

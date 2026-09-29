@@ -27,7 +27,11 @@ node --test "tests/*.test.mjs"
 
 ## Add a hike
 
-Append an object to `data/hikes.json`. The Score is computed on load, so leave it out.
+In the app, **Add hike** opens a form. The location search finds towns and parks; for a trailhead, paste "lat, lon" from a map into the search box. Added hikes are saved in this browser only and can be removed from their enlarged card. To keep them, click **Download hikes.json** and replace `data/hikes.json` with it; the browser copies are then ignored. Run `node tools/images.mjs` afterwards to look up photos.
+
+With Claude Code, `/add-hike <name or AllTrails link>` researches the stats and trailhead, asks for your ratings and appends the hike with `node tools/add-hike.mjs --file hike.json` (add `--dry-run` to only check it). The tool applies the same checks as the form.
+
+To add one by hand, append an object to `data/hikes.json`. The Score is computed on load, so leave it out.
 
 ```json
 {

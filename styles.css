@@ -95,6 +95,9 @@ a { color: var(--accent); }
 #list { max-width: 1240px; margin: 0 auto; }
 .group h2 { display: flex; align-items: center; gap: 10px; margin: 36px 0 16px; font-size: 1.3rem; font-weight: 600; letter-spacing: -.01em; }
 .group h2 .count { font-size: .8rem; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; }
+.more { display: flex; justify-content: center; margin: 28px 0 0; }
+.more .chip { padding: 10px 22px; font-size: .95rem; font-weight: 500; }
+.more-left { color: var(--muted); font-weight: 400; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--gap); }
 
 /* Card: photo background with a shaded lower half carrying the content */
@@ -116,9 +119,9 @@ a { color: var(--accent); }
 .backdrop { position: absolute; top: 8%; left: 50%; transform: translateX(-50%); font-size: 180px; color: rgba(255, 255, 255, .18); }
 .backdrop .icon svg { stroke-width: 1; }
 .credit {
-  position: absolute; top: 14px; right: 16px; z-index: 1; font-size: .68rem; color: rgba(255, 255, 255, .75);
+  position: absolute; top: 14px; left: 16px; z-index: 1; font-size: .68rem; color: rgba(255, 255, 255, .75);
   text-decoration: none; background: rgba(0, 0, 0, .25); padding: 2px 8px; border-radius: 999px;
-  max-width: calc(100% - 32px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: calc(100% - 120px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .credit:hover { color: #fff; }
 
@@ -185,6 +188,22 @@ a { color: var(--accent); }
 .diff-4 { --diff: #f28a4b; }
 .diff-5 { --diff: #e5534b; }
 
+/* Quality: award icon and score in the top-right corner, grey for Poor up to gold for Outstanding */
+.quality-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 1;
+  padding: 8px 14px 8px 11px; border-radius: 999px; background: rgba(0, 0, 0, .38);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: var(--q);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+.quality-score { display: flex; align-items: center; gap: 6px; font-size: 1.3rem; font-weight: 600; line-height: 1; }
+.quality-score .icon { font-size: 24px; }
+.quality-score small { font-size: .8rem; font-weight: 500; opacity: .7; margin-left: -3px; }
+.q-1 { --q: #b9bdb5; }
+.q-2 { --q: #d6d2b8; }
+.q-3 { --q: #e8d58c; }
+.q-4 { --q: #f5c54a; }
+.q-5 { --q: #ffb938; }
+
 .action {
   display: block; margin-top: 4px; padding: 14px; border-radius: 999px; text-align: center;
   background: #fff; color: #1f2320; font-weight: 600; font-size: 1rem; text-decoration: none;
@@ -197,11 +216,43 @@ a { color: var(--accent); }
 .modal::backdrop { background: rgba(10, 12, 10, .65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .modal .card { min-height: min(760px, calc(100vh - 32px)); box-shadow: none; }
 .modal .card h3 { font-size: 2rem; }
+.modal .card .credit { left: 60px; max-width: calc(100% - 164px); }
 .modal-close {
   position: absolute; top: 12px; left: 12px; z-index: 2; display: grid; place-items: center; width: 36px; height: 36px;
   border: 0; border-radius: 50%; background: rgba(0, 0, 0, .4); color: #fff; font-size: 18px; cursor: pointer;
 }
 .modal-close:hover { background: rgba(0, 0, 0, .6); }
+.remove {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; align-self: center; padding: 6px 12px;
+  border: 0; border-radius: 999px; background: none; color: rgba(255, 255, 255, .75); font: inherit; font-size: .85rem; cursor: pointer;
+}
+.remove:hover { color: #fff; background: rgba(0, 0, 0, .25); }
+
+/* Add hike form, shown in the modal */
+.hike-form {
+  display: flex; flex-direction: column; gap: 16px; padding: 60px 28px 28px;
+  background: var(--surface); color: var(--text); border-radius: var(--radius);
+}
+.modal:has(.hike-form) .modal-close { background: var(--bg); color: var(--text); }
+.hike-form h3 { margin: 0; font-size: 1.6rem; font-weight: 500; letter-spacing: -.01em; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field-row > .field { flex: 1 1 140px; }
+.field > span, .field-group > legend { color: var(--muted); font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.field-group { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.field-group > legend { padding: 0; margin-bottom: 8px; }
+.field-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.field-search { display: flex; gap: 6px; }
+.hike-form input, .hike-form select {
+  width: 100%; font: inherit; font-size: .9rem; padding: 8px 12px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+.field-search input { border-radius: 999px; }
+.chips-row, .places-found { display: flex; flex-wrap: wrap; gap: 6px; }
+.places-found:empty, .form-hint:empty, .form-error:empty { display: none; }
+.form-hint { margin: 0; font-size: .8rem; color: var(--muted); }
+.form-error { margin: 0; color: var(--danger); font-size: .9rem; }
+.hike-form .action { width: 100%; border: 0; font: inherit; font-weight: 600; cursor: pointer; background: var(--text); color: var(--bg); }
+
 .error-box { margin: 24px 0; padding: 16px; border: 1px solid var(--danger); border-radius: 16px; color: var(--danger); background: var(--surface); }
 
 @media (max-width: 480px) {

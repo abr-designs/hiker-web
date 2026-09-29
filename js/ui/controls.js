@@ -20,11 +20,12 @@ let homeRequest = 0;
 
 /**
  * days: forecast date strings (empty when there is no forecast).
+ * hikes: {added, onAdd, onDownload}; added counts hikes saved in this browser only.
  * @created Claude (claude-opus-5-5) - 2026-09-28
  */
-export function renderControls(root, store, days) {
+export function renderControls(root, store, days, hikes) {
   const { dayIndex, filters, home } = store.get();
-  const refresh = () => renderControls(root, store, days);
+  const refresh = () => renderControls(root, store, days, hikes);
   const setFilters = patch => store.set({ filters: { ...filters, ...patch } });
   const toggle = (list, value) => (list.includes(value) ? list.filter(v => v !== value) : [...list, value]);
   const chip = (label, pressed, onclick, { title, iconName } = {}) =>
@@ -108,6 +109,10 @@ export function renderControls(root, store, days) {
           chip(a, filters.access.includes(a), () => setFilters({ access: toggle(filters.access, a) }), { iconName: 'alert' }))),
         row('Tags', TAGS.map(t =>
           chip(tagLabel(t), filters.tags.includes(t), () => setFilters({ tags: toggle(filters.tags, t) }), { iconName: TAG_ICONS[t] }))))),
+    hikes && row('Hikes',
+      chip('Add hike', null, hikes.onAdd, { iconName: 'plus' }),
+      hikes.added > 0 && chip(`Download hikes.json (${hikes.added} added)`, null, hikes.onDownload,
+        { iconName: 'download', title: 'Replace data/hikes.json with this file to keep the added hikes' })),
   ].filter(Boolean));
 
   if (focused) root.querySelector(`[data-focus="${CSS.escape(focused)}"]`)?.focus();

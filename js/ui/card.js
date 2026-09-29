@@ -7,7 +7,8 @@ import { icon, sky } from './icons.js';
 import { weatherScore, bandFor } from '../weatherScore.js';
 
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DIFFICULTY = ['Easy', 'Moderate', 'Challenging', 'Hard', 'Extreme'];
+export const DIFFICULTY = ['Easy', 'Moderate', 'Challenging', 'Hard', 'Extreme'];
+export const QUALITY = ['Poor', 'Fair', 'Good', 'Great', 'Outstanding'];
 export const TAG_ICONS = {
   WATERFALLS: 'droplets', BIG_TREES: 'tree', WILDFLOWERS: 'flower', SWIMMING: 'waves',
   COASTAL_VIEWS: 'sailboat', MOUNTAIN_VIEWS: 'mountain', HISTORY: 'landmark', GEOLOGY: 'gem',
@@ -18,15 +19,17 @@ export const TAG_ICONS = {
  * image: {url, page, credit} from data/images.json, or undefined.
  * onOpen: called when the card is clicked (the name is also a button for keyboards). expanded: the modal version,
  * with titled facts and every tag. weather: an element that replaces the weather strip.
+ * onRemove: shows a Remove button (for hikes added in the app).
  * @created Claude (claude-opus-5-5) - 2026-09-28
  */
-export function renderCard({ hike, forecast, dayIndex, band, driveHrs, image, onOpen, expanded = false, weather }) {
+export function renderCard({ hike, forecast, dayIndex, band, driveHrs, image, onOpen, expanded = false, weather, onRemove }) {
   const link = hike.allTrails
     ? { href: hike.allTrails, text: 'View on AllTrails' }
     : Number.isFinite(hike.lat) && { href: `https://www.google.com/maps/dir/?api=1&destination=${hike.lat},${hike.lon}`, text: 'Directions' };
 
   const card = el('article', { class: ['card', !image && 'no-photo', onOpen && 'openable', expanded && 'expanded'].filter(Boolean).join(' '), 'data-hike': hike.id },
     image && renderCredit(image),
+    QUALITY[hike.quality - 1] && qualityBadge(hike.quality),
     !image && el('span', { class: 'backdrop' }, icon('mountain')),
     el('div', { class: 'card-body' },
       el('h3', {}, onOpen ? el('button', { type: 'button', class: 'card-open', onclick: onOpen }, hike.name) : hike.name),
@@ -42,7 +45,8 @@ export function renderCard({ hike, forecast, dayIndex, band, driveHrs, image, on
         chip('calendar', season(hike)),
         hike.access.map(a => chip('alert', a, 'warn')),
         (expanded ? hike.tags : hike.tags.slice(0, 2)).map(t => chip(TAG_ICONS[t], tagLabel(t)))),
-      link && el('a', { class: 'action', href: link.href, target: '_blank', rel: 'noopener' }, link.text)));
+      link && el('a', { class: 'action', href: link.href, target: '_blank', rel: 'noopener' }, link.text),
+      onRemove && el('button', { type: 'button', class: 'remove', onclick: onRemove }, icon('trash'), 'Remove this added hike')));
 
   // JSON string quoting is a valid CSS string, so quotes or backslashes in a hand-entered URL cannot break out.
   if (onOpen) card.addEventListener('click', e => e.target.closest('a, button') || onOpen());
@@ -61,6 +65,17 @@ function renderCredit(image) {
 /** @created Claude (claude-opus-5-5) - 2026-09-28 */
 function fact(title, value) {
   return el('div', {}, el('dt', {}, title), el('dd', {}, value));
+}
+
+/**
+ * Corner badge for the 1 to 5 Quality rating: an award icon and "4/5".
+ * @created Claude (claude-opus-5-5) - 2026-09-28
+ */
+function qualityBadge(quality) {
+  const label = `Quality: ${QUALITY[quality - 1]} (${quality} of 5)`;
+  return el('span', { class: `quality-badge q-${quality}`, title: label },
+    el('span', { class: 'sr-only' }, label),
+    el('span', { class: 'quality-score', 'aria-hidden': 'true' }, icon('award'), String(quality), el('small', {}, '/5')));
 }
 
 /** @created Claude (claude-opus-5-5) - 2026-09-28 */

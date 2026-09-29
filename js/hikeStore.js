@@ -12,7 +12,7 @@ export function prepareHikes(raw) {
   return raw.map((hike, i) => {
     const missing = REQUIRED.filter(f => hike[f] === undefined || hike[f] === '' || hike[f] === null);
     if (missing.length) throw new Error(`Hike "${hike.name ?? `#${i}`}" is missing: ${missing.join(', ')}`);
-    return { tags: [], access: [], ...hike, score: hikeScore(hike) };
+    return { ...hike, tags: hike.tags ?? [], access: hike.access ?? [], score: hikeScore(hike) };
   });
 }
 
