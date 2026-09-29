@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rank } from '../js/recommender.js';
+import { rank, goodFirst } from '../js/recommender.js';
 
 const hike = (id, score, over = {}) => ({ id, name: id, score, tags: [], access: [], country: 'CA', ...over });
 const day = over => ({ date: '2026-09-28', highC: 18, lowC: 8, cloudPct: 0, popPct: 0, visKm: 30, ...over });
@@ -55,4 +55,17 @@ test('country filter', () => {
 test('tags require any selected', () => {
   const hikes = [hike('w', 1, { tags: ['WATERFALLS'] }), hike('s', 2, { tags: ['SWIMMING', 'GEOLOGY'] }), hike('x', 3)];
   assert.deepEqual(ids(rank(hikes, noWeather, { filters: { tags: ['WATERFALLS', 'GEOLOGY'] } })), ['w', 's']);
+});
+
+test('goodFirst: good items first, the rest by Score regardless of band', () => {
+  const hikes = [hike('good', 5), hike('fairHigh', 9), hike('poorLow', 1), hike('unknown', 3)];
+  const forecasts = new Map([
+    ['good', [day()]],
+    ['fairHigh', [day({ cloudPct: 60 })]],
+    ['poorLow', [day({ cloudPct: 50, popPct: 30 })]],
+  ]);
+  const { good, rest } = goodFirst(rank(hikes, forecasts));
+  assert.deepEqual(good.map(i => i.hike.id), ['good']);
+  assert.deepEqual(rest.map(i => i.hike.id), ['poorLow', 'unknown', 'fairHigh']);
+  assert.deepEqual(rest.map(i => i.band), ['poor', 'unknown', 'fair']);
 });

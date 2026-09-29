@@ -32,3 +32,16 @@ function matches(hike, { inSeason, access = [], country, tags = [] }, month) {
   if (tags.length && !tags.some(t => hike.tags.includes(t))) return false;
   return true;
 }
+
+/**
+ * Splits rank() output for display: good-weather items first, then every other item by Score alone
+ * (band labels are not shown, so the rest must not look out of order). Items gain their `band`.
+ * @created Claude (claude-opus-5-5) - 2026-09-28
+ */
+export function goodFirst(bands) {
+  const tagged = bands.flatMap(({ band, items }) => items.map(item => ({ ...item, band })));
+  return {
+    good: tagged.filter(i => i.band === 'good'),
+    rest: tagged.filter(i => i.band !== 'good').sort((a, b) => a.hike.score - b.hike.score),
+  };
+}

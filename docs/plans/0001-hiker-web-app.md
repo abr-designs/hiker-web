@@ -10,7 +10,7 @@
 | Updated | 2026-09-28 |
 | Proficiency | 6/10 |
 | Engine | Vanilla HTML / CSS / JS (ES modules), static hosting, no backend |
-| Revisions | 1 (latest: U-001) |
+| Revisions | 2 (latest: U-002) |
 | Summary | Hike cards ranked by the sheet's hike Score, grouped into weather bands per forecast day, with drive times. |
 
 ## Revision Log
@@ -18,6 +18,7 @@
 | ID | Date | Type | Change |
 |---|---|---|---|
 | U-001 | 2026-09-28 | Update | Origin prefers saved home over geolocation; test command uses a glob; convert title-cases names; ui/dom.js element helper added. |
+| U-002 | 2026-09-28 | Improvement | Card redesign: photo background from Wikimedia Commons or Openverse (build-time `tools/images.mjs` -> `data/images.json`, credit names author and licence; entries are checked by hand and `false` marks a rejected match), 7-day weather icon strip, Score and band labels hidden, list shows Good matches first, then the rest by Score (`goodFirst` in recommender.js). |
 
 ---
 
@@ -149,8 +150,9 @@ Pattern: Observer.
 - `createStore(initial) -> {get, set(patch), subscribe(fn)}`. Holds `{dayIndex, filters}`.
 
 ### ui (`js/ui/`)
-- `card.js` `renderCard(hike, dayForecast, driveHrs) -> Element`: name, AllTrails link, Score, length / time / gain, difficulty, quality, tags, access, season, weather summary + band, drive time.
-- `list.js` `renderList(root, bands, driveHours)`.
+- `card.js` `renderCard({hike, forecast, dayIndex, band, driveHrs, image}) -> Element`: photo (or fallback art), name, length / time / gain, difficulty, 7-day weather strip (icon, high, selected day, good-weather dot), chips (Good match, drive time, season, access, two tags), AllTrails or directions button. No numeric scores.
+- `icons.js`: inline stroke icons and WMO code -> icon.
+- `list.js` `renderList(root, bands, {forecasts, dayIndex, driveHours, images})`: "Good matches" group, then "More hikes" (every other band, merged and sorted by Score via `goodFirst`).
 - `dom.js` `el(tag, attrs, ...children)` element helper shared by the three views.
 - `controls.js` `renderControls(root, store, days)`: day picker, season / access / country / tag filters, set-home input.
 

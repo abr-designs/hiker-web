@@ -27,12 +27,13 @@ let hikes = [];
 let forecasts = new Map();
 let driveHours = new Map();
 let days = [];
+let images = {};
 let notes = [];
 
 function render() {
   const { dayIndex, filters } = store.get();
   const bands = rank(hikes, forecasts, { dayIndex, filters });
-  renderList($list, bands, driveHours, { heading: forecasts.size > 0 });
+  renderList($list, bands, { forecasts, dayIndex, driveHours, images });
   renderControls($controls, store, days);
 }
 
@@ -59,6 +60,7 @@ async function start() {
     return;
   }
 
+  images = await loadImages();
   render();
   notice('Loading weather and drive times...');
 
@@ -87,6 +89,20 @@ async function start() {
     }
     render();
   });
+}
+
+/**
+ * Photos are optional: a missing or broken images.json just means cards use the fallback art.
+ * @created Claude (claude-opus-5-5) - 2026-09-28
+ */
+async function loadImages() {
+  try {
+    const res = await fetch('data/images.json', { cache: 'no-cache' });
+    const body = res.ok ? await res.json() : null;
+    return body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  } catch {
+    return {};
+  }
 }
 
 function originLabel(source) {

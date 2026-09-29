@@ -3,7 +3,7 @@
 
 # Hiker
 
-Local hikes as cards, grouped by the forecast weather at each trailhead and sorted by the hike Score (lower = more reasonable). Static HTML, CSS and JS; no server, no API keys. Weather comes from [Open-Meteo](https://open-meteo.com) and drive times from the public [OSRM](https://project-osrm.org) server, both cached in the browser.
+Local hikes as photo cards with a 7-day weather strip. Hikes with good weather on the chosen day come first as Good matches; each group is sorted by the hike Score (kept in the background, lower = more reasonable). Static HTML, CSS and JS; no server, no API keys. Weather comes from [Open-Meteo](https://open-meteo.com) and drive times from the public [OSRM](https://project-osrm.org) server, both cached in the browser.
 
 Design: [docs/plans/0001-hiker-web-app.md](docs/plans/0001-hiker-web-app.md).
 
@@ -69,6 +69,16 @@ node tools/convert.mjs
 ```
 
 This overwrites `data/hikes.json` (hand-added hikes included) and prints unmatched names and Local/Database conflicts. Local wins every conflict.
+
+## Photos
+
+`data/images.json` maps a hike id to `{url, page, credit, title}`: a photo, its source page, the credit shown on the card (linked to the page for attribution) and the source's own title. Hikes without an entry, with `null` (nothing found) or `false` (rejected by hand) show fallback art. To fill in new hikes:
+
+```bash
+node tools/images.mjs
+```
+
+It tries Wikimedia Commons (hike name near its coordinates), then [Openverse](https://openverse.org) (openly licensed photos, mostly Flickr; name plus province or state, then name alone). A title must contain every distinctive word of the hike name (not words like mount or lake), and Openverse photos must also look scenic or regional. The credit on each card names the author and licence. It keeps existing entries (hand edits win), paces itself around the rate limits and retries failed requests; hikes that still fail are left out and tried again on the next run. A full run takes about 20 minutes. Add `--retry-misses` to look up `null` entries again. Matching is by title only, so the same name elsewhere (another Mount Daniel, a Chain Bridge) can slip through: check each new photo against its `title` and the hike, and set wrong ones to `false` so no later run picks them again. To pick a photo yourself, set the entry by hand.
 
 ## Settings
 
